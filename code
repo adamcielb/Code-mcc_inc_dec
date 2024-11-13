@@ -1,0 +1,94 @@
+#include <Arduino.h>
+
+const int inc = 2;           // Pin pour le bouton d'incrémentation
+const int dec = 3;           // Pin pour le bouton de décrémentation
+const int bleu = 8;          // Pin pour la LED bleue
+const int rouge = 9;         // Pin pour la LED rouge
+const int vert = 10;         // Pin pour la LED verte
+const int bouton_reset = 4;  // Pin pour le bouton de reset
+const int commande_MLI = 11; // Pin pour la commande MLI
+
+int valeur = 0;              //  intier la Valeur actuelle a 0
+const int valeur_max = 255;  // Valeur maximale pour le moteur
+
+void setup() {
+    pinMode(inc, INPUT_PULLUP);
+    pinMode(dec, INPUT_PULLUP);
+    pinMode(bouton_reset, INPUT_PULLUP);
+    pinMode(commande_MLI, OUTPUT);
+    pinMode(bleu, OUTPUT);
+    pinMode(rouge, OUTPUT);
+    pinMode(vert, OUTPUT);
+    
+    digitalWrite(commande_MLI, valeur); // Initialise la commande MLI
+}
+
+void loop() {
+    if (digitalRead(inc) == LOW) {
+        if (valeur < valeur_max) {
+            valeur += 10; // Incrémente de 10
+        }
+        delay(200); // Anti-rebond
+    }
+
+    if (digitalRead(dec) == LOW) {
+        if (valeur > 0) {
+            valeur -= 10; // Décrémente de 10
+        }
+        delay(200); // Anti-rebond
+    }
+
+    if (digitalRead(bouton_reset) == LOW) {
+        valeur = 0;
+        delay(200); // Anti-rebond
+    }
+
+    // Commande MLI
+    analogWrite(commande_MLI, valeur);
+
+    // LED indications
+    if (valeur == 0) {
+        digitalWrite(bleu, HIGH);
+        digitalWrite(rouge, LOW);
+        digitalWrite(vert, LOW);
+    } else if (valeur == valeur_max) {
+        digitalWrite(bleu, LOW);
+        digitalWrite(rouge, HIGH);
+        digitalWrite(vert, LOW);
+    } else {
+        digitalWrite(bleu, LOW);
+        digitalWrite(rouge, LOW);
+        digitalWrite(vert, HIGH);
+    }
+
+    // Logique additionnelle pour le contrôle moteur et les LED
+    analogWrite(commande_MLI, 255);  // Moteur à pleine puissance
+    analogWrite(rouge, 150);          // LED Rouge à 150
+    analogWrite(vert, 0);             // LED Verte à 0
+    analogWrite(bleu, 0);             // LED Bleue à 0
+    delay(1000);
+
+    analogWrite(commande_MLI, 200);  // Réduire la puissance du moteur
+    analogWrite(rouge, 127);          // LED Rouge à 127
+    analogWrite(vert, 0);             // LED Verte à 0
+    analogWrite(bleu, 127);           // LED Bleue à 127
+    delay(1000);
+
+    analogWrite(commande_MLI, 150);  // Réduire encore la puissance du moteur
+    analogWrite(rouge, 0);            // LED Rouge à 0
+    analogWrite(vert, 0);             // LED Verte à 0
+    analogWrite(bleu, 150);           // LED Bleue à 150
+    delay(1000);
+
+    analogWrite(commande_MLI, 100);  // Diminuer la puissance du moteur
+    analogWrite(rouge, 0);            // LED Rouge à 0
+    analogWrite(vert, 150);           // LED Verte à 150
+    analogWrite(bleu, 0);             // LED Bleue à 0
+    delay(1000);
+
+    analogWrite(commande_MLI, 50);   // Diminuer encore la puissance du moteur
+    analogWrite(rouge, 0);            // LED Rouge à 0
+    analogWrite(vert, 150);           // LED Verte à 150
+    analogWrite(bleu, 0);             // LED Bleue à 0
+    delay(1000);
+} 
