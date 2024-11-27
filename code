@@ -8,8 +8,8 @@ const int vert = 10;         // Pin pour la LED verte
 const int bouton_reset = 4;  // Pin pour le bouton de reset
 const int commande_MLI = 11; // Pin pour la commande MLI
 
-int valeur = 0;              //  intier la Valeur actuelle a 0
-const int valeur_max = 255;  // Valeur maximale pour le moteur
+int valeur = 0;              // Valeur actuelle du moteur, initialisée à 0
+const int valeur_max = 255;  // Valeur maximale pour la commande MLI (environ 500 RPM)
 
 void setup() {
     pinMode(inc, INPUT_PULLUP);
@@ -24,71 +24,52 @@ void setup() {
 }
 
 void loop() {
+    // Incrémentation de la vitesse (augmentation)
     if (digitalRead(inc) == LOW) {
-        if (valeur < valeur_max) {
-            valeur += 10; // Incrémente de 10
+        if (valeur < valeur_max - 25) {  // Eviter de dépasser la valeur maximale
+            valeur += 25; // Incrémenter la vitesse de 25 (environ 50 RPM)
         }
         delay(200); // Anti-rebond
     }
 
+    // Décrémentation de la vitesse (réduction)
     if (digitalRead(dec) == LOW) {
-        if (valeur > 0) {
-            valeur -= 10; // Décrémente de 10
+        if (valeur > 25) {  // Eviter de descendre en dessous de 0
+            valeur -= 25; // Décrémenter la vitesse de 25 (environ 50 RPM)
         }
         delay(200); // Anti-rebond
     }
 
+    // Réinitialisation de la vitesse
     if (digitalRead(bouton_reset) == LOW) {
-        valeur = 0;
-        delay(200); // Anti-rebond
+        valeur = 0;  // Réinitialiser la vitesse à 0
+        delay(200);  // Anti-rebond
     }
 
     // Commande MLI
     analogWrite(commande_MLI, valeur);
 
-    // LED indications
+    // LED indications en fonction de la vitesse
     if (valeur == 0) {
+        // 0% de la vitesse, LED bleue allumée
         digitalWrite(bleu, HIGH);
         digitalWrite(rouge, LOW);
         digitalWrite(vert, LOW);
-    } else if (valeur == valeur_max) {
+    } else if (valeur >= 0.6 * valeur_max) {  // 60% de la vitesse max, LED bleue allumée
+        digitalWrite(bleu, HIGH);
+        digitalWrite(rouge, LOW);
+        digitalWrite(vert, LOW);
+    } else if (valeur >= 0.3 * valeur_max) {  // 30% de la vitesse max, LED jaune
+        digitalWrite(bleu, LOW);
+        digitalWrite(rouge, HIGH);
+        digitalWrite(vert, HIGH);
+    } else if (valeur == valeur_max) { // 100% de la vitesse max, LED rouge
         digitalWrite(bleu, LOW);
         digitalWrite(rouge, HIGH);
         digitalWrite(vert, LOW);
-    } else {
+    } else {  // Entre 0% et 30% (vert)
         digitalWrite(bleu, LOW);
         digitalWrite(rouge, LOW);
         digitalWrite(vert, HIGH);
     }
-
-    // Logique additionnelle pour le contrôle moteur et les LED
-    analogWrite(commande_MLI, 255);  // Moteur à pleine puissance
-    analogWrite(rouge, 150);          // LED Rouge à 150
-    analogWrite(vert, 0);             // LED Verte à 0
-    analogWrite(bleu, 0);             // LED Bleue à 0
-    delay(1000);
-
-    analogWrite(commande_MLI, 200);  // Réduire la puissance du moteur
-    analogWrite(rouge, 127);          // LED Rouge à 127
-    analogWrite(vert, 0);             // LED Verte à 0
-    analogWrite(bleu, 127);           // LED Bleue à 127
-    delay(1000);
-
-    analogWrite(commande_MLI, 150);  // Réduire encore la puissance du moteur
-    analogWrite(rouge, 0);            // LED Rouge à 0
-    analogWrite(vert, 0);             // LED Verte à 0
-    analogWrite(bleu, 150);           // LED Bleue à 150
-    delay(1000);
-
-    analogWrite(commande_MLI, 100);  // Diminuer la puissance du moteur
-    analogWrite(rouge, 0);            // LED Rouge à 0
-    analogWrite(vert, 150);           // LED Verte à 150
-    analogWrite(bleu, 0);             // LED Bleue à 0
-    delay(1000);
-
-    analogWrite(commande_MLI, 50);   // Diminuer encore la puissance du moteur
-    analogWrite(rouge, 0);            // LED Rouge à 0
-    analogWrite(vert, 150);           // LED Verte à 150
-    analogWrite(bleu, 0);             // LED Bleue à 0
-    delay(1000);
-} 
+}
